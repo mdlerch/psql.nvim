@@ -1,45 +1,56 @@
-let SQLcaller = {}
+let PSQLcaller = {}
 
-function SQLcaller.on_stdout(job_id, data)
-    call append(line('$'), self.get_name().' stdout: '.join(a:data))
+" do nothing...
+function PSQLcaller.on_stdout(job_id, data)
 endfunction
 
-function SQLcaller.on_stderr(job_id, data)
+function PSQLcaller.on_stderr(job_id, data)
     call append(line('$'), self.get_name().' stderr: '.join(a:data))
 endfunction
 
-function SQLcaller.on_exit(job_id, data)
-    call append(line('$'), self.get_name().' exited')
+" on exit, open job file
+function PSQLcaller.on_exit(job_id, data)
+    let outfile = "/tmp/" . self.get_name()
+    exe "split " . outfile
 endfunction
 
-function SQLcaller.get_name()
-    return 'shell '.self.name
+function PSQLcaller.get_name()
+    return self.name
 endfunction
 
-function SQLcaller.new(name, ...)
-    let instance = extend(copy(g:SQLcaller), {'name': a:name})
-    let argv = [g:sql_command]
-    if a:0 > 0
-        let argv += ['-c', a:1]
-    endif
-    let instance.id = jobstart(argv, instance)
-    return instance
-endfunction
-
-" let s1 = SQLcaller.new('job1')
-" let s2 = SQLcaller.new('job2', 'for i in {1..10}; do echo hello $i!; sleep 1; done')
-
-function! Sql_launch()
+function PSQLcaller.new(name, ...)
+    let instance = extend(copy(g:PSQLcaller), {'name': a:name})
+    let outfile = "/tmp/" . a:name
     if exists("g:sql_command")
-        new
-        let g:sql_term_id = termopen(g:sql_command, {'name': 'sql'})
-    else
-        echo "g:sql_command not found"
+        if a:0 > 0
+            let argv = g:sql_command . a:1
+        else
+            let argv = g:sql_command . ' -f ' . expand('%') . ' > ' . outfile
+        endif
+        let instance.id = jobstart(argv, instance)
+        return instance
     endif
 endfunction
 
-function! Sql_query()
-    let call1 = SQLcaller.new('call1', 
-
+function! PSQLsource()
+    let jobname = "psql" . strftime('%s')
+    return g:PSQLcaller.new(jobname)
 endfunction
+
+function! PSQLsection()
+    let jobname = "psql" . strftime('%s')
+    let sectionfile = tempname()
+    let cmd = "\'<,\'>write " . sectionfile
+    exe cmd
+    let opts = ' -f ' . sectionfile . ' > /tmp/' . jobname
+    return g:PSQLcaller.new(jobname, opts)
+endfunction
+
+function! PSQLcolumns(tablename)
+    let jobname = "psql" . strftime('%s')
+    let opts = ' -c ' . '"\d+ ' . a:tablename . '" > /tmp/' . jobname
+    return g:PSQLcaller.new(jobname, opts)
+endfunction
+
+
 
