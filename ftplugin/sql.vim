@@ -46,16 +46,16 @@ endfunction
 
 function! PSQLsection()
     let jobname = "psql" . strftime('%s')
-    let sectionfile = s:tmpdir . jobname
-    let cmd = "'<,'>write " . sectionfile
+    let sectionfile = s:tmpdir . jobname . ".sql"
+    let cmd = "\'<,\'>write " . sectionfile
     exe cmd
-    let opts = ' -f ' . sectionfile . ' > ' s:tmpdir . jobname
+    let opts = ' -f ' . sectionfile . ' > ' . s:tmpdir . jobname
     return g:PSQLcaller.new(jobname, opts)
 endfunction
 
 function! PSQLcolumns(tablename)
     let jobname = "psql" . strftime('%s')
-    let opts = ' -c ' . '"\d+ ' . a:tablename . '" > ' s:tmpdir . jobname
+    let opts = ' -c ' . '"\d+ ' . a:tablename . '" > ' . s:tmpdir . jobname
     return g:PSQLcaller.new(jobname, opts)
 endfunction
 
