@@ -6,8 +6,6 @@ let PSQLcaller = {}
 
 let s:tmpdir = "/tmp/nvimpsql/"
 
-
-
 " do nothing...
 function PSQLcaller.on_stdout(job_id, data)
 endfunction
@@ -18,11 +16,12 @@ endfunction
 
 " on exit, open job file
 function PSQLcaller.on_exit(job_id, data)
+    let g:PSQLcalls = g:PSQLcalls - 1
     if a:data == 0
         let outfile = s:tmpdir . self.get_name()
-        exe "split " . outfile
+        exe "bot split " . outfile
+        set tw=0
     endif
-    let g:PSQLcalls = g:PSQLcalls - 1
 endfunction
 
 function PSQLcaller.get_name()
