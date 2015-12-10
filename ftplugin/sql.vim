@@ -1,3 +1,7 @@
+if !exists("g:PSQLcalls")
+    let g:PSQLcalls = 0
+endif
+
 let PSQLcaller = {}
 
 let s:tmpdir = "/tmp/nvimpsql/"
@@ -14,8 +18,11 @@ endfunction
 
 " on exit, open job file
 function PSQLcaller.on_exit(job_id, data)
-    let outfile = s:tmpdir . self.get_name()
-    exe "split " . outfile
+    if a:data == 0
+        let outfile = s:tmpdir . self.get_name()
+        exe "split " . outfile
+    endif
+    let g:PSQLcalls = g:PSQLcalls - 1
 endfunction
 
 function PSQLcaller.get_name()
@@ -23,6 +30,7 @@ function PSQLcaller.get_name()
 endfunction
 
 function PSQLcaller.new(name, ...)
+    let g:PSQLcalls = g:PSQLcalls + 1
     let instance = extend(copy(g:PSQLcaller), {'name': a:name})
     let outfile = s:tmpdir . a:name
     if exists("g:sql_command")
