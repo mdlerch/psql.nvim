@@ -20,7 +20,8 @@ function PSQLcaller.on_exit(job_id, data)
     if a:data == 0
         let outfile = s:tmpdir . self.get_name()
         exe "bot split " . outfile
-        set tw=0
+        setl tw=0
+        setl nowrap
     endif
 endfunction
 
